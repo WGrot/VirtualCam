@@ -4,9 +4,67 @@
 #include <Eigen/Geometry>
 #include <iostream>
 #include <vector>
+#include "Camera.h"
+#include "Edge.h"
+#include "Shape.h"
 
 const int WIDTH = 1280;
-const int HEIGHT = 720;
+const int HEIGHT =  720;
+
+
+std::vector<Edge> createCubeEdges() {
+    std::vector<Edge> edges;
+    // Definiowanie wierzchołków sześcianu
+    Eigen::Vector4f v0(-1, -1, 9, 1);
+    Eigen::Vector4f v1(1, -1, 9, 1);
+    Eigen::Vector4f v2(1, 1, 9, 1);
+    Eigen::Vector4f v3(-1, 1, 9, 1);
+    Eigen::Vector4f v4(-1, -1, 11, 1);
+    Eigen::Vector4f v5(1, -1, 11, 1);
+    Eigen::Vector4f v6(1, 1, 11, 1);
+    Eigen::Vector4f v7(-1, 1, 11, 1);
+
+    // Definiowanie krawędzi sześcianu
+    edges.push_back(Edge(v0, v1));
+    edges.push_back(Edge(v1, v2));
+    edges.push_back(Edge(v2, v3));
+    edges.push_back(Edge(v3, v0));
+    edges.push_back(Edge(v4, v5));
+    edges.push_back(Edge(v5, v6));
+    edges.push_back(Edge(v6, v7));
+    edges.push_back(Edge(v7, v4));
+    edges.push_back(Edge(v0, v4));
+    edges.push_back(Edge(v1, v5));
+    edges.push_back(Edge(v2, v6));
+    edges.push_back(Edge(v3, v7));
+
+    return edges;
+}
+
+Eigen::Vector2f project(const Eigen::Vector4f& point, const Eigen::Matrix4f& projectionMatrix) {
+    Eigen::Vector4f projected = projectionMatrix * point;
+    return Eigen::Vector2f(projected.x() / projected.w(), projected.y() / projected.w());
+}
+
+Eigen::Vector2f myProject(const Eigen::Vector4f& point, const Eigen::Matrix4f& projectionMatrix) {
+    Eigen::Vector4f projected = projectionMatrix * point;
+    return Eigen::Vector2f(projected.x() / projected.w(), projected.y() / projected.w());
+}
+
+void drawShape(SDL_Renderer* renderer, const Shape& shape, const Eigen::Matrix4f& projectionMatrix) {
+    for (const Edge& edge : shape.getEdges()) {
+        Eigen::Vector2f start = project(edge.getStart(), projectionMatrix);
+        Eigen::Vector2f end = project(edge.getEnd(), projectionMatrix);
+
+        SDL_RenderDrawLine(renderer,
+            static_cast<int>((start.x() + 1) * WIDTH / 2),
+            static_cast<int>((1 - start.y()) * HEIGHT / 2),
+            static_cast<int>((end.x() + 1) * WIDTH / 2),
+            static_cast<int>((1 - end.y()) * HEIGHT / 2));
+    }
+}
+
+
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -29,15 +87,28 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    bool running = true;
-    SDL_Event event;
+    std::vector<Shape> Shapes;
+    Shapes.push_back(Shape(createCubeEdges()));
 
-    int lineY = HEIGHT / 2;
+    float d = 1.0f;
+    float a = (float)WIDTH / (float)HEIGHT;
+	std::cout << "a: " << a << ", d: " << d << std::endl;
+    Eigen::Matrix4f projectionMatrix;
+    projectionMatrix <<
+        1/a, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 1/d, 0;
+
+
+    SDL_Event event;
+    bool running = true;
 	int lastMouseX = 0;
 	int lastMouseY = 0;
 	int deltaMouseX = 0;
 	int deltaMouseY = 0;
     bool cursorLock = true;
+	float d_step = 0.2f;
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -47,30 +118,15 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_MOUSEMOTION) {
 				deltaMouseX = event.motion.x - lastMouseX;
 				deltaMouseY = event.motion.y - lastMouseY;
-                std::cout << "x: " << deltaMouseX
-                    << ", y: " << deltaMouseY << '\n';
-
-				lineY += deltaMouseY;
 				lastMouseX = event.motion.x;
 				lastMouseY = event.motion.y;
             }
 
-            //if (event.type == SDL_MOUSEBUTTONDOWN) {
-            //    if (cursorLock) {
-            //        SDL_ShowCursor(SDL_DISABLE);
-            //        SDL_SetWindowGrab(window, SDL_TRUE);
-            //        SDL_SetRelativeMouseMode(SDL_TRUE);
-            //        cursorLock = false;
-            //    }
-            //}
-
 
             if (event.type == SDL_MOUSEWHEEL) {
 				if (event.wheel.y > 0) {
-					lineY -= 10; 
 				}
 				else if (event.wheel.y < 0) {
-					lineY += 10; 
 				}
             }
 
@@ -101,29 +157,22 @@ int main(int argc, char* argv[]) {
 				case SDLK_d:
 					//Do when D is pressed
 					break;
-                //case SDLK_ESCAPE:
-                //    if (!cursorLock) {
-                //        SDL_ShowCursor(SDL_ENABLE);
-                //        SDL_SetWindowGrab(window, SDL_FALSE);
-                //        SDL_SetRelativeMouseMode(SDL_FALSE);
-                //        cursorLock = true;
-                //    }
-                //    break;
+
                 
                 }
             }
             #pragma endregion
         }
 
-        std::cout << "x: " << deltaMouseX
-            << ", y: " << deltaMouseY << '\n';
-
         // Kopiowanie danych do tekstury i renderowanie
 
         SDL_RenderClear(renderer);
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Ustawienie koloru tła
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-        SDL_RenderDrawLine(renderer, 0, lineY, WIDTH, lineY); // Przykładowa linia
+        for (const Shape& shape : Shapes) {
+            drawShape(renderer, shape, projectionMatrix);
+        }
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderPresent(renderer);
 
