@@ -1,5 +1,9 @@
 ﻿#include <SDL2/SDL.h>
 #include <iostream>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <iostream>
+#include <vector>
 
 const int WIDTH = 1280;
 const int HEIGHT = 720;
@@ -33,23 +37,32 @@ int main(int argc, char* argv[]) {
 	int lastMouseY = 0;
 	int deltaMouseX = 0;
 	int deltaMouseY = 0;
+    bool cursorLock = true;
 
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = false;
             #pragma region InputSetup
-
-			deltaMouseX = 0;
-			deltaMouseY = 0;
+            
             if (event.type == SDL_MOUSEMOTION) {
 				deltaMouseX = event.motion.x - lastMouseX;
 				deltaMouseY = event.motion.y - lastMouseY;
                 std::cout << "x: " << deltaMouseX
                     << ", y: " << deltaMouseY << '\n';
 
+				lineY += deltaMouseY;
 				lastMouseX = event.motion.x;
 				lastMouseY = event.motion.y;
             }
+
+            //if (event.type == SDL_MOUSEBUTTONDOWN) {
+            //    if (cursorLock) {
+            //        SDL_ShowCursor(SDL_DISABLE);
+            //        SDL_SetWindowGrab(window, SDL_TRUE);
+            //        SDL_SetRelativeMouseMode(SDL_TRUE);
+            //        cursorLock = false;
+            //    }
+            //}
 
 
             if (event.type == SDL_MOUSEWHEEL) {
@@ -65,11 +78,37 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                 case SDLK_UP:
-                    lineY -= 10; 
+					//Do when up arrow is pressed 
                     break;
                 case SDLK_DOWN:
-                    lineY += 10; 
+					//Do when down arrow is pressed
                     break;
+				case SDLK_LEFT:
+					//Do when left arrow is pressed
+					break;
+				case SDLK_RIGHT:
+					//Do when right arrow is pressed
+					break;
+				case SDLK_w:
+					//Do when W is pressed
+					break;
+				case SDLK_s:
+					//Do when S is pressed
+					break;
+				case SDLK_a:
+					//Do when A is pressed
+				break;
+				case SDLK_d:
+					//Do when D is pressed
+					break;
+                //case SDLK_ESCAPE:
+                //    if (!cursorLock) {
+                //        SDL_ShowCursor(SDL_ENABLE);
+                //        SDL_SetWindowGrab(window, SDL_FALSE);
+                //        SDL_SetRelativeMouseMode(SDL_FALSE);
+                //        cursorLock = true;
+                //    }
+                //    break;
                 
                 }
             }
