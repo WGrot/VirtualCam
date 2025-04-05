@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Edge.h"
 #include "Shape.h"
+#include "MyRenderer.h"
 
 const int WIDTH = 1280;
 const int HEIGHT =  720;
@@ -41,29 +42,6 @@ std::vector<Edge> createCubeEdges() {
     return edges;
 }
 
-Eigen::Vector2f project(const Eigen::Vector4f& point, const Eigen::Matrix4f& projectionMatrix) {
-    Eigen::Vector4f projected = projectionMatrix * point;
-    return Eigen::Vector2f(projected.x() / projected.w(), projected.y() / projected.w());
-}
-
-Eigen::Vector2f myProject(const Eigen::Vector4f& point, const Eigen::Matrix4f& projectionMatrix) {
-    Eigen::Vector4f projected = projectionMatrix * point;
-    return Eigen::Vector2f(projected.x() / projected.w(), projected.y() / projected.w());
-}
-
-void drawShape(SDL_Renderer* renderer, const Shape& shape, const Eigen::Matrix4f& projectionMatrix) {
-    for (const Edge& edge : shape.getEdges()) {
-        Eigen::Vector2f start = project(edge.getStart(), projectionMatrix);
-        Eigen::Vector2f end = project(edge.getEnd(), projectionMatrix);
-
-        SDL_RenderDrawLine(renderer,
-            static_cast<int>((start.x() + 1) * WIDTH / 2),
-            static_cast<int>((1 - start.y()) * HEIGHT / 2),
-            static_cast<int>((end.x() + 1) * WIDTH / 2),
-            static_cast<int>((1 - end.y()) * HEIGHT / 2));
-    }
-}
-
 
 
 int main(int argc, char* argv[]) {
@@ -90,16 +68,7 @@ int main(int argc, char* argv[]) {
     std::vector<Shape> Shapes;
     Shapes.push_back(Shape(createCubeEdges()));
 
-    float d = 1.0f;
-    float a = (float)WIDTH / (float)HEIGHT;
-	std::cout << "a: " << a << ", d: " << d << std::endl;
-    Eigen::Matrix4f projectionMatrix;
-    projectionMatrix <<
-        1/a, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 1/d, 0;
-
+	MyRenderer myRenderer(renderer, 1, WIDTH, HEIGHT);
 
     SDL_Event event;
     bool running = true;
@@ -108,7 +77,7 @@ int main(int argc, char* argv[]) {
 	int deltaMouseX = 0;
 	int deltaMouseY = 0;
     bool cursorLock = true;
-	float d_step = 0.2f;
+
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -124,10 +93,7 @@ int main(int argc, char* argv[]) {
 
 
             if (event.type == SDL_MOUSEWHEEL) {
-				if (event.wheel.y > 0) {
-				}
-				else if (event.wheel.y < 0) {
-				}
+				myRenderer.stepD(event.wheel.y);
             }
 
 
@@ -170,7 +136,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
         for (const Shape& shape : Shapes) {
-            drawShape(renderer, shape, projectionMatrix);
+            myRenderer.drawShape(shape);
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
