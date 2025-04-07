@@ -84,12 +84,6 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_QUIT) running = false;
             #pragma region InputSetup
             
-            if (event.type == SDL_MOUSEMOTION) {
-				deltaMouseX = event.motion.x - lastMouseX;
-				deltaMouseY = event.motion.y - lastMouseY;
-				lastMouseX = event.motion.x;
-				lastMouseY = event.motion.y;
-            }
 
 
             if (event.type == SDL_MOUSEWHEEL) {
@@ -100,30 +94,44 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                 case SDLK_UP:
-					//Do when up arrow is pressed 
+                    myRenderer.RotateCamera(-4, 0, 0);
                     break;
                 case SDLK_DOWN:
-					//Do when down arrow is pressed
+					myRenderer.RotateCamera(4, 0, 0);
                     break;
 				case SDLK_LEFT:
-					//Do when left arrow is pressed
+                    myRenderer.RotateCamera(0, -4, 0);
 					break;
 				case SDLK_RIGHT:
-					//Do when right arrow is pressed
+                    myRenderer.RotateCamera(0, 4, 0);
 					break;
+                case SDLK_q:
+                    myRenderer.RotateCamera(0, 0, 4);
+                    break;
+                case SDLK_e:
+                    myRenderer.RotateCamera(0, 0, -4);
+                    break;
 				case SDLK_w:
-					//Do when W is pressed
+					myRenderer.moveCameraForward(1);
 					break;
 				case SDLK_s:
-					//Do when S is pressed
+                    myRenderer.moveCameraForward(-1);
 					break;
 				case SDLK_a:
-					//Do when A is pressed
+					myRenderer.moveCameraRight(-1);
 				break;
 				case SDLK_d:
-					//Do when D is pressed
+                    myRenderer.moveCameraRight(1);
 					break;
-
+                case SDLK_SPACE:
+                    myRenderer.moveCameraUp(1);
+                    break;
+                case SDLK_LCTRL:
+                    myRenderer.moveCameraUp(-1);
+                    break;
+				case SDLK_ESCAPE:
+                    cursorLock = !cursorLock;
+					break;
                 
                 }
             }
@@ -133,6 +141,7 @@ int main(int argc, char* argv[]) {
         // Kopiowanie danych do tekstury i renderowanie
 
         SDL_RenderClear(renderer);
+		myRenderer.RecalculateViewMatrix();
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
         for (const Shape& shape : Shapes) {
@@ -142,7 +151,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderPresent(renderer);
 
-        SDL_Delay(32); // Ograniczenie do ~60 FPS
+        SDL_Delay(16); // Ograniczenie do ~60 FPS
     }
 
 
