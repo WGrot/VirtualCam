@@ -10,12 +10,14 @@ private:
 	Eigen::Matrix4f projectionMatrix;
     float d;
 	float d_step = 0.05f;
+	float near = 0.1f;
+	float far = 100.0f;
 	float widthToHeightRatio;
 	int WIDTH;
 	int HEIGHT;
 
 	Eigen::Vector3f cameraPosition = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
-	Eigen::Vector3f cameraForward = Eigen::Vector3f(0.0f, 0.0f, -1.0f);
+	Eigen::Vector3f cameraForward = Eigen::Vector3f(0.0f, 0.0f, 1.0f);
 	Eigen::Vector3f cameraUp = Eigen::Vector3f(0.0f, 1.0f, 0.0f);
 	Eigen::Vector3f cameraRight = Eigen::Vector3f(1.0f, 0.0f, 0.0f);
 	float cameraStep = 0.2f;
@@ -37,12 +39,15 @@ public:
 			0, 0, 1 / d, 0;
 
 		viewMatrix = Eigen::Matrix4f::Identity();
-		viewMatrix(0, 3) = -cameraPosition.x();
-		viewMatrix(1, 3) = -cameraPosition.y();
-		viewMatrix(2, 3) = -cameraPosition.z();
+		viewMatrix(0, 3) = cameraPosition.x();
+		viewMatrix(1, 3) = cameraPosition.y();
+		viewMatrix(2, 3) = cameraPosition.z();
+
+		RecalculateProjectionMatrix();
 	};
 
 	Eigen::Matrix4f getProjectionMatrix();
+	Eigen::Matrix4f getViewMatrix();
 
 	void setProjectionMatrix(Eigen::Matrix4f projectionMatrix);
 
@@ -53,7 +58,7 @@ public:
 	void RecalculateProjectionMatrix();
 	void RecalculateViewMatrix();
 
-	Eigen::Vector2f projectPoint(const Eigen::Vector4f& point);
+	Eigen::Vector4f projectPoint(const Eigen::Vector4f& point);
 
 	void drawShape(const Shape& shape);
 

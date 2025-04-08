@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
                     myRenderer.moveCameraUp(-1);
                     break;
 				case SDLK_ESCAPE:
-                    cursorLock = !cursorLock;
+                    std::cout << "ViewMatrix:\n" << myRenderer.getViewMatrix() << "\n";
 					break;
                 
                 }

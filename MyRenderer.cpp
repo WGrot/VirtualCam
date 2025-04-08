@@ -5,7 +5,12 @@
 
 Eigen::Matrix4f MyRenderer::getProjectionMatrix()
 {
-	return Eigen::Matrix4f();
+	return projectionMatrix;
+}
+
+Eigen::Matrix4f MyRenderer::getViewMatrix()
+{
+	return viewMatrix;
 }
 
 void MyRenderer::setProjectionMatrix(Eigen::Matrix4f projectionMatrix)
@@ -20,11 +25,11 @@ void MyRenderer::setD(float d)
 
 void MyRenderer::stepD(int value)
 {
-	if (value > 0) {
-		d += d_step;
-	}
-	else if (value < 0) {
+	if (value > 0 && d - d_step > 0) {
 		d -= d_step;
+	}
+	else if (value < 0 ) {
+		d += d_step;
 	}
 	RecalculateProjectionMatrix();
 
@@ -32,33 +37,31 @@ void MyRenderer::stepD(int value)
 
 void MyRenderer::RecalculateProjectionMatrix()
 {
+
+	float f = 1.0f / tan(d / 2.0f);
+
 	projectionMatrix <<
-		1 / widthToHeightRatio, 0, 0, 0,
-		0, 1, 0, 0,  
-		0, 0, 1, 0,  
-		0, 0, 1 / d, 0;
+		f / widthToHeightRatio, 0, 0, 0,
+		0, f, 0, 0,  
+		0, 0, (far + near) / (far - near),  2 * far * near / (far - near),
+		0, 0, 1, 0;
+	std::cout << "ProjectionMatrix:\n" << projectionMatrix << "\n";
 }
 
 void MyRenderer::RecalculateViewMatrix()
 {
 
-	/*cameraForward.normalize();
-	cameraRight = cameraForward.cross(cameraUp).normalized();
-	cameraUp = cameraRight.cross(cameraForward).normalized();*/
-
-	// Macierz rotacji kamery
 	Eigen::Matrix3f rotation;
 	rotation.col(0) = cameraRight;
 	rotation.col(1) = cameraUp;
-	rotation.col(2) = -cameraForward; // Uwaga: forward musi byæ "w g³¹b ekranu"
+	rotation.col(2) = cameraForward; 
 
-	// Buduj pe³n¹ macierz widoku
 	viewMatrix.setIdentity();
-	viewMatrix.block<3, 3>(0, 0) = rotation.transpose(); // transpozycja = odwrotnoœæ obrotu
+	viewMatrix.block<3, 3>(0, 0) = rotation.transpose();
 	viewMatrix.block<3, 1>(0, 3) = -rotation.transpose() * cameraPosition;
 
-	// Debug
-	//std::cout << "ViewMatrix:\n" << viewMatrix << "\n";
+
+	
 	
 	//viewMatrix <<
 	//	cameraRight.x(), cameraRight.y(), cameraRight.z(), -cameraPosition.x(),
@@ -69,23 +72,37 @@ void MyRenderer::RecalculateViewMatrix()
 
 }
 
-Eigen::Vector2f MyRenderer::projectPoint(const Eigen::Vector4f& point)
+Eigen::Vector4f MyRenderer::projectPoint(const Eigen::Vector4f& point)
 {
-
-	Eigen::Vector4f projected = projectionMatrix * viewMatrix *  point;
-	return Eigen::Vector2f(projected.x() / projected.w(), projected.y() / projected.w());
+	return projectionMatrix * viewMatrix * point;
 }
 
 void MyRenderer::drawShape(const Shape& shape) {
-	for (const Edge& edge : shape.getEdges()) {
-		Eigen::Vector2f start = projectPoint(edge.getStart());
-		Eigen::Vector2f end = projectPoint(edge.getEnd());
 
-		SDL_RenderDrawLine(renderer,
-			static_cast<int>((start.x() + 1) * WIDTH / 2),
-			static_cast<int>((1 - start.y()) * HEIGHT / 2),
-			static_cast<int>((end.x() + 1) * WIDTH / 2),
-			static_cast<int>((1 - end.y()) * HEIGHT / 2));
+	for (const Edge& edge : shape.getEdges()) {
+		Eigen::Vector4f start_clip = projectPoint(edge.getStart());
+		Eigen::Vector4f end_clip = projectPoint(edge.getEnd());
+
+		bool start_visible = start_clip.w() > 0;
+		bool end_visible = end_clip.w() > 0;
+
+		if (start_visible && end_visible) {
+			float startX_ndc = start_clip.x() / start_clip.w();
+			float startY_ndc = start_clip.y() / start_clip.w();
+
+			float endX_ndc = end_clip.x() / end_clip.w();
+			float endY_ndc = end_clip.y() / end_clip.w();
+
+
+			int startScreenX = static_cast<int>((startX_ndc + 1.0f) * WIDTH / 2.0f);
+			int startScreenY = static_cast<int>((1.0f - startY_ndc) * HEIGHT / 2.0f);
+
+			int endScreenX = static_cast<int>((endX_ndc + 1.0f) * WIDTH / 2.0f);
+			int endScreenY = static_cast<int>((1.0f - endY_ndc) * HEIGHT / 2.0f);
+
+			SDL_RenderDrawLine(renderer, startScreenX, startScreenY, endScreenX, endScreenY);
+
+		}
 	}
 }
 
@@ -97,7 +114,6 @@ void MyRenderer::moveCameraRight(int align)
 	else {
 		cameraPosition -= cameraStep * cameraRight;
 	}
-	//RecalculateViewMatrix();
 }
 
 void MyRenderer::moveCameraForward(int align)
@@ -108,8 +124,6 @@ void MyRenderer::moveCameraForward(int align)
 	else {
 		cameraPosition -= cameraStep * cameraForward;
 	}
-
-	//RecalculateViewMatrix();
 }
 
 void MyRenderer::moveCameraUp(int align)
@@ -120,8 +134,6 @@ void MyRenderer::moveCameraUp(int align)
 	else {
 		cameraPosition -= cameraStep * cameraUp;
 	}
-
-	//RecalculateViewMatrix();
 }
 
 void MyRenderer::RotateCamera(int mouseX, int mouseY, int mouseZ)
@@ -143,5 +155,4 @@ void MyRenderer::RotateCamera(int mouseX, int mouseY, int mouseZ)
 	cameraForward = q * cameraForward;
 	cameraRight = q * cameraRight;
 	cameraUp = q * cameraUp;
-	//RecalculateViewMatrix();
 }
