@@ -4,45 +4,14 @@
 #include <Eigen/Geometry>
 #include <iostream>
 #include <vector>
-#include "Camera.h"
+
 #include "Edge.h"
 #include "Shape.h"
 #include "MyRenderer.h"
+#include "Scene.h"
 
 const int WIDTH = 1280;
 const int HEIGHT =  720;
-
-
-std::vector<Edge> createCubeEdges() {
-    std::vector<Edge> edges;
-    // Definiowanie wierzchołków sześcianu
-    Eigen::Vector4f v0(-1, -1, 9, 1);
-    Eigen::Vector4f v1(1, -1, 9, 1);
-    Eigen::Vector4f v2(1, 1, 9, 1);
-    Eigen::Vector4f v3(-1, 1, 9, 1);
-    Eigen::Vector4f v4(-1, -1, 11, 1);
-    Eigen::Vector4f v5(1, -1, 11, 1);
-    Eigen::Vector4f v6(1, 1, 11, 1);
-    Eigen::Vector4f v7(-1, 1, 11, 1);
-
-    // Definiowanie krawędzi sześcianu
-    edges.push_back(Edge(v0, v1));
-    edges.push_back(Edge(v1, v2));
-    edges.push_back(Edge(v2, v3));
-    edges.push_back(Edge(v3, v0));
-    edges.push_back(Edge(v4, v5));
-    edges.push_back(Edge(v5, v6));
-    edges.push_back(Edge(v6, v7));
-    edges.push_back(Edge(v7, v4));
-    edges.push_back(Edge(v0, v4));
-    edges.push_back(Edge(v1, v5));
-    edges.push_back(Edge(v2, v6));
-    edges.push_back(Edge(v3, v7));
-
-    return edges;
-}
-
-
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -65,8 +34,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::vector<Shape> Shapes;
-    Shapes.push_back(Shape(createCubeEdges()));
+
+	Scene scene;
+	scene.loadFromFile("Scene1.txt");
 
 	MyRenderer myRenderer(renderer, 1, WIDTH, HEIGHT);
 
@@ -138,20 +108,20 @@ int main(int argc, char* argv[]) {
             #pragma endregion
         }
 
-        // Kopiowanie danych do tekstury i renderowanie
+
 
         SDL_RenderClear(renderer);
 		myRenderer.RecalculateViewMatrix();
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-        for (const Shape& shape : Shapes) {
+        for (const Shape& shape : scene.getShapes()) {
             myRenderer.drawShape(shape);
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderPresent(renderer);
 
-        SDL_Delay(16); // Ograniczenie do ~60 FPS
+        SDL_Delay(16); 
     }
 
 
