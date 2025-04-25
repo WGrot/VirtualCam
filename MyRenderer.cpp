@@ -45,7 +45,6 @@ void MyRenderer::RecalculateProjectionMatrix()
 		0, f, 0, 0,  
 		0, 0, (far + near) / (far - near),  2 * far * near / (far - near),
 		0, 0, 1, 0;
-	std::cout << "ProjectionMatrix:\n" << projectionMatrix << "\n";
 }
 
 void MyRenderer::RecalculateViewMatrix()
@@ -59,16 +58,6 @@ void MyRenderer::RecalculateViewMatrix()
 	viewMatrix.setIdentity();
 	viewMatrix.block<3, 3>(0, 0) = rotation.transpose();
 	viewMatrix.block<3, 1>(0, 3) = -rotation.transpose() * cameraPosition;
-
-
-	
-	
-	//viewMatrix <<
-	//	cameraRight.x(), cameraRight.y(), cameraRight.z(), -cameraPosition.x(),
-	//	cameraUp.x(), cameraUp.y(), cameraUp.z(), -cameraPosition.y(),
-	//	-cameraForward.x(), -cameraForward.y(), -cameraForward.z(), -cameraPosition.z(),
-	//	0, 0, 0, 1;
-
 
 }
 
