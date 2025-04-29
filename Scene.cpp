@@ -14,7 +14,7 @@ void Scene::loadFromFile(const std::string& filename) {
 	std::vector<Edge> currentEdges;
 
 	while (std::getline(file, line)) {
-		// Pomijamy komentarze i puste linie
+
 		if (line.empty() || line[0] == '#') {
 			if (!currentEdges.empty()) {
 				shapes.emplace_back(currentEdges);
@@ -34,8 +34,6 @@ void Scene::loadFromFile(const std::string& filename) {
 		Eigen::Vector4f end(x2, y2, z2, 1.0f);
 		currentEdges.emplace_back(start, end);
 	}
-
-	// Dodaj ostatni kszta³t jeœli coœ zosta³o
 	if (!currentEdges.empty()) {
 		shapes.emplace_back(currentEdges);
 	}

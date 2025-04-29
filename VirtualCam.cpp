@@ -42,19 +42,12 @@ int main(int argc, char* argv[]) {
 
     SDL_Event event;
     bool running = true;
-	int lastMouseX = 0;
-	int lastMouseY = 0;
-	int deltaMouseX = 0;
-	int deltaMouseY = 0;
-    bool cursorLock = true;
 
 
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = false;
             #pragma region InputSetup
-            
-
 
             if (event.type == SDL_MOUSEWHEEL) {
 				myRenderer.stepD(event.wheel.y);
@@ -99,9 +92,13 @@ int main(int argc, char* argv[]) {
                 case SDLK_LCTRL:
                     myRenderer.moveCameraUp(-1);
                     break;
-				case SDLK_ESCAPE:
-                    std::cout << "ViewMatrix:\n" << myRenderer.getViewMatrix() << "\n";
-					break;
+                case SDLK_MINUS:
+                    myRenderer.stepD(-1);
+                    break;
+                case SDLK_EQUALS:
+                    myRenderer.stepD(1);
+                    break;
+
                 
                 }
             }
