@@ -93,6 +93,52 @@ void MyRenderer::drawShape(const Shape& shape) {
 
 		}
 	}
+
+	for (const Tris& tris : shape.getTris_list()) {
+		Eigen::Vector4f v1 = projectPoint(tris.getV1());
+		Eigen::Vector4f v2 = projectPoint(tris.getV2());
+		Eigen::Vector4f v3 = projectPoint(tris.getV3());
+
+		bool v1_visible = v1.w() > 0;
+		bool v2_visible = v2.w() > 0;
+		bool v3_visible = v3.w() > 0;
+
+		if (v1_visible && v2_visible && v3_visible) {
+			float v1X_ndc = v1.x() / v1.w();
+			float v1Y_ndc = v1.y() / v1.w();
+
+			float v2X_ndc = v2.x() / v2.w();
+			float v2Y_ndc = v2.y() / v2.w();
+
+			float v3X_ndc = v3.x() / v3.w();
+			float v3Y_ndc = v3.y() / v3.w();
+
+
+			int v1ScreenX = static_cast<int>((v1X_ndc + 1.0f) * WIDTH / 2.0f);
+			int v1ScreenY = static_cast<int>((1.0f - v1Y_ndc) * HEIGHT / 2.0f);
+
+			int v2ScreenX = static_cast<int>((v2X_ndc + 1.0f) * WIDTH / 2.0f);
+			int v2ScreenY = static_cast<int>((1.0f - v2Y_ndc) * HEIGHT / 2.0f);
+
+			int v3ScreenX = static_cast<int>((v3X_ndc + 1.0f) * WIDTH / 2.0f);
+			int v3ScreenY = static_cast<int>((1.0f - v3Y_ndc) * HEIGHT / 2.0f);
+
+			SDL_Color trisColor = { tris.getR(), tris.getG(), tris.getB(), 255 }; 
+
+			SDL_Vertex verts[3] = {
+				{ {v1ScreenX, v1ScreenY}, trisColor, {0, 0} },
+				{ {v2ScreenX, v2ScreenY}, trisColor, {0, 0} },
+				{ {v3ScreenX, v3ScreenY}, trisColor, {0, 0} }
+			};
+
+			SDL_RenderGeometry(renderer, nullptr, verts, 3, nullptr, 0);
+
+		}
+	}
+}
+
+void MyRenderer::DrawTris(const Tris& tris) {
+
 }
 
 void MyRenderer::moveCameraRight(int align)

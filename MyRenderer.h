@@ -62,6 +62,8 @@ public:
 
 	void drawShape(const Shape& shape);
 
+	void DrawTris(const Tris& tris);
+
 	void moveCameraRight(int align);
 	void moveCameraForward(int align);
 	void moveCameraUp(int align);

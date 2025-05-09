@@ -12,37 +12,53 @@ void Scene::loadFromFile(const std::string& filename) {
 
 	std::string line;
 	std::vector<Edge> currentEdges;
+	std::vector<Tris> currentTris;
 
 	while (std::getline(file, line)) {
-
 		if (line.empty() || line[0] == '#') {
-			if (!currentEdges.empty()) {
-				shapes.emplace_back(currentEdges);
+			if (!currentEdges.empty() || !currentTris.empty()) {
+				shapes.emplace_back(currentEdges, currentTris);
 				currentEdges.clear();
+				currentTris.clear();
 			}
 			continue;
 		}
 
 		std::istringstream iss(line);
-		float x1, y1, z1, x2, y2, z2;
-		if (!(iss >> x1 >> y1 >> z1 >> x2 >> y2 >> z2)) {
-			std::cerr << "B³¹d parsowania linii: " << line << std::endl;
-			continue;
+		std::vector<float> numbers;
+		float num;
+		while (iss >> num) {
+			numbers.push_back(num);
 		}
 
-		Eigen::Vector4f start(x1, y1, z1, 1.0f);
-		Eigen::Vector4f end(x2, y2, z2, 1.0f);
-		currentEdges.emplace_back(start, end);
+		if (numbers.size() == 6) {
+			Eigen::Vector4f start(numbers[0], numbers[1], numbers[2], 1.0f);
+			Eigen::Vector4f end(numbers[3], numbers[4], numbers[5], 1.0f);
+			currentEdges.emplace_back(start, end);
+		}
+		else if (numbers.size() == 12) {
+			Eigen::Vector4f v1(numbers[0], numbers[1], numbers[2], 1.0f);
+			Eigen::Vector4f v2(numbers[3], numbers[4], numbers[5], 1.0f);
+			Eigen::Vector4f v3(numbers[6], numbers[7], numbers[8], 1.0f);
+			int R = static_cast<int>(numbers[9]);
+			int G = static_cast<int>(numbers[10]);
+			int B = static_cast<int>(numbers[11]);
+			currentTris.emplace_back(v1, v2, v3, R, G, B);
+		}
+		else {
+			std::cerr << "Nieprawid³owa liczba wartoœci w linii: " << line << std::endl;
+		}
 	}
-	if (!currentEdges.empty()) {
-		shapes.emplace_back(currentEdges);
+
+	if (!currentEdges.empty() || !currentTris.empty()) {
+		shapes.emplace_back(currentEdges, currentTris);
 	}
 
 	file.close();
 
-	for (Shape shape : shapes)
-	{
+	for (const Shape& shape : shapes) {
 		std::cout << "Shape with " << shape.getEdges().size() << " edges loaded." << std::endl;
 	}
 }
+
 
