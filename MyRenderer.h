@@ -1,5 +1,6 @@
 #pragma once
 #include "Shape.h"
+#include "Scene.h"
 #include<Eigen/Core>
 #include <Eigen/Geometry>
 #include <SDL2/SDL.h>
@@ -59,6 +60,8 @@ public:
 	void RecalculateViewMatrix();
 
 	Eigen::Vector4f projectPoint(const Eigen::Vector4f& point);
+
+	void drawFaces(const Scene& scene);
 
 	void drawShape(const Shape& shape);
 

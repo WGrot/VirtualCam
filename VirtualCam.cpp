@@ -114,6 +114,7 @@ int main(int argc, char* argv[]) {
         for (const Shape& shape : scene.getShapes()) {
             myRenderer.drawShape(shape);
         }
+		myRenderer.drawFaces(scene);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderPresent(renderer);

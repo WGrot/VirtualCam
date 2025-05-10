@@ -107,6 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\wojte\Downloads\SDL-release-2.32.6\SDL-release-2.32.6\include;C:\Users\wojte\Downloads\eigen-3.4.0\eigen-3.4.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,12 +136,14 @@
     <ClCompile Include="MyRenderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="Tris.cpp" />
     <ClCompile Include="VirtualCam.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Edge.h" />
     <ClInclude Include="MyRenderer.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="Tris.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Shape.h" />
   </ItemGroup>
