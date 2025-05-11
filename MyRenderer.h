@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include<Eigen/Core>
 #include <Eigen/Geometry>
+#include <map>
 #include <SDL2/SDL.h>
 class MyRenderer
 {
@@ -71,6 +72,15 @@ public:
 	void moveCameraForward(int align);
 	void moveCameraUp(int align);
 	void RotateCamera(int mouseX, int mouseY, int mouseZ);
+
+
+
+	bool boxesIntersect(const Eigen::Vector2f& minA, const Eigen::Vector2f& maxA,
+		const Eigen::Vector2f& minB, const Eigen::Vector2f& maxB);
+	void getBoundingBox2D(const Tris& t, Eigen::Vector2f& min, Eigen::Vector2f& max);
+	bool isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer);
+	bool isOnSameSide(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer);
+	std::vector<int> getRenderingOrder(int numTris, const std::map<int, std::vector<int>>& graph);
 };
 
 
