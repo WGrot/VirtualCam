@@ -74,7 +74,7 @@ public:
 	void RotateCamera(int mouseX, int mouseY, int mouseZ);
 
 
-
+	bool projectedTrianglesIntersect(Tris P,  Tris Q);
 	bool boxesIntersect(const Eigen::Vector2f& minA, const Eigen::Vector2f& maxA,
 		const Eigen::Vector2f& minB, const Eigen::Vector2f& maxB);
 	void getBoundingBox2D(const Tris& t, Eigen::Vector2f& min, Eigen::Vector2f& max);

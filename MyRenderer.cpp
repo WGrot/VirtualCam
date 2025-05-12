@@ -82,101 +82,28 @@ void MyRenderer::drawFaces(const Scene& scene)
 			Eigen::Vector3f cameraToTrisVector = cameraPosition - tris.getV1().head<3>();
 			float wynik = tris.getNormal().dot(cameraToTrisVector);
 			if (wynik > 0) {
-				validTris.push_back(tris);
+
 			}
 
+			Eigen::Vector4f v1 = projectPoint(tris.getV1());
+			Eigen::Vector4f v2 = projectPoint(tris.getV2());
+			Eigen::Vector4f v3 = projectPoint(tris.getV3());
+
+			bool v1_visible = v1.w() > 0;
+			bool v2_visible = v2.w() > 0;
+			bool v3_visible = v3.w() > 0;
+
+			if (v1_visible && v2_visible && v3_visible && wynik > 0) {
+				validTris.push_back(tris);
+			}
 		}
+	}
 
 		for (Tris& tris : validTris) {
 			Eigen::Vector4f v1 = projectPoint(tris.getV1());
 			Eigen::Vector4f v2 = projectPoint(tris.getV2());
 			Eigen::Vector4f v3 = projectPoint(tris.getV3());
 
-			tris.SetV1Projection(v1);
-			tris.SetV2Projection(v2);
-			tris.SetV3Projection(v3);
-
-			bool v1_visible = v1.w() > 0;
-			bool v2_visible = v2.w() > 0;
-			bool v3_visible = v3.w() > 0;
-
-
-
-			/*if (v1_visible && v2_visible && v3_visible) {
-				float v1X_ndc = v1.x() / v1.w();
-				float v1Y_ndc = v1.y() / v1.w();
-
-				float v2X_ndc = v2.x() / v2.w();
-				float v2Y_ndc = v2.y() / v2.w();
-
-				float v3X_ndc = v3.x() / v3.w();
-				float v3Y_ndc = v3.y() / v3.w();
-
-
-				int v1ScreenX = static_cast<int>((v1X_ndc + 1.0f) * WIDTH / 2.0f);
-				int v1ScreenY = static_cast<int>((1.0f - v1Y_ndc) * HEIGHT / 2.0f);
-
-				int v2ScreenX = static_cast<int>((v2X_ndc + 1.0f) * WIDTH / 2.0f);
-				int v2ScreenY = static_cast<int>((1.0f - v2Y_ndc) * HEIGHT / 2.0f);
-
-				int v3ScreenX = static_cast<int>((v3X_ndc + 1.0f) * WIDTH / 2.0f);
-				int v3ScreenY = static_cast<int>((1.0f - v3Y_ndc) * HEIGHT / 2.0f);
-
-				SDL_Color trisColor = { tris.getR(), tris.getG(), tris.getB(), 255 };
-
-				SDL_Vertex verts[3] = {
-					{ {v1ScreenX, v1ScreenY}, trisColor, {0, 0} },
-					{ {v2ScreenX, v2ScreenY}, trisColor, {0, 0} },
-					{ {v3ScreenX, v3ScreenY}, trisColor, {0, 0} }
-				};
-
-				SDL_RenderGeometry(renderer, nullptr, verts, 3, nullptr, 0);
-
-			}*/
-		}
-
-		for (int i = 0; i < validTris.size(); i++) {
-			const Tris& P = validTris[i]; 
-
-			for (int j = 0; j < validTris.size(); j++) {
-				if (i == j) continue;
-				const Tris& Q = validTris[j];
-
-				// === Test 1: Prostok¹tne otoczki ===
-				Eigen::Vector2f A_min, A_max, B_min, B_max;
-				getBoundingBox2D(P, A_min, A_max);
-				getBoundingBox2D(Q, B_min, B_max);
-
-				if (!boxesIntersect(A_min, A_max, B_min, B_max)) {
-					continue; // nie zas³ania
-				}
-
-				// === Test 2: Czy rzuty siê przecinaj¹ ===
-				//if (!projectedTrianglesIntersect(A, B)) {
-				//	continue; // nie zas³ania
-				//}
-
-				// === Test 3: B ca³kowicie po przeciwnej stronie od obserwatora wzglêdem A ===
-				if (isCompletelyBehind(P, Q, cameraPosition)) {
-					continue; // nie zas³ania
-				}
-
-				// === Test 4: A po tej samej stronie co obserwator wzglêdem p³aszczyzny B ===
-				if (isOnSameSide(Q, P, cameraPosition)) {
-					continue; // nie zas³ania
-				}
-
-				// Jeœli przeszed³ wszystkie testy – A zas³ania B
-				trisMap[i].push_back(j);
-			}
-		}
-		std::vector<int> renderingOrder = getRenderingOrder(validTris.size(), trisMap);
-
-		for (int i = 0; i < renderingOrder.size(); i++) {
-			Tris tris = validTris[renderingOrder[i]];
-			Eigen::Vector4f v1 = projectPoint(tris.getV1());
-			Eigen::Vector4f v2 = projectPoint(tris.getV2());
-			Eigen::Vector4f v3 = projectPoint(tris.getV3());
 
 			bool v1_visible = v1.w() > 0;
 			bool v2_visible = v2.w() > 0;
@@ -204,8 +131,90 @@ void MyRenderer::drawFaces(const Scene& scene)
 				int v3ScreenX = static_cast<int>((v3X_ndc + 1.0f) * WIDTH / 2.0f);
 				int v3ScreenY = static_cast<int>((1.0f - v3Y_ndc) * HEIGHT / 2.0f);
 
-				SDL_Color trisColor = { tris.getR(), tris.getG(), tris.getB(), 255 };
+				Eigen::Vector2f v1ScreenPos(v1ScreenX, v1ScreenY);
+				Eigen::Vector2f v2ScreenPos(v2ScreenX, v2ScreenY);
+				Eigen::Vector2f v3ScreenPos(v3ScreenX, v3ScreenY);
+				tris.SetV1Projection(v1ScreenPos);
+				tris.SetV2Projection(v2ScreenPos);
+				tris.SetV3Projection(v3ScreenPos);
+			}
 
+
+
+		}
+
+		for (int i = 0; i < validTris.size(); i++) {
+			const Tris& P = validTris[i]; 
+
+			for (int j = 0; j < validTris.size(); j++) {
+				if (i == j) continue;
+				if (std::find(trisMap[i].begin(), trisMap[i].end(), j) != trisMap[i].end()) {
+					continue;
+				}
+				if (std::find(trisMap[j].begin(), trisMap[j].end(), i) != trisMap[j].end()) {
+					continue;
+				}
+				const Tris& Q = validTris[j];
+
+				// === Test 1: Prostok¹tne otoczki ===
+				Eigen::Vector2f P_min, P_max, Q_min, Q_max;
+				getBoundingBox2D(P, P_min, P_max);
+				getBoundingBox2D(Q, Q_min, Q_max);
+
+				if (!boxesIntersect(P_min, P_max, Q_min, Q_max)) {
+					continue; 
+
+				}
+
+			
+				if (!Tris::trianglesIntersect(P, Q)) {
+					continue; 
+				}
+
+				// === Test 3: B ca³kowicie po przeciwnej stronie od obserwatora wzglêdem A ===
+				if (isCompletelyBehind(P, Q, cameraPosition)) {
+					trisMap[j].push_back(i);
+					continue; 
+
+				}
+
+				// === Test 4: A po tej samej stronie co obserwator wzglêdem p³aszczyzny B ===
+				if (isOnSameSide(Q, P, cameraPosition)) {
+					trisMap[i].push_back(j);
+					continue; 
+				}
+
+			}
+		}
+		std::vector<int> renderingOrder = getRenderingOrder(validTris.size(), trisMap);
+
+		for (int i = 0; i < renderingOrder.size(); i++) {
+			Tris tris = validTris[renderingOrder[i]];
+			Eigen::Vector4f v1 = projectPoint(tris.getV1());
+			Eigen::Vector4f v2 = projectPoint(tris.getV2());
+			Eigen::Vector4f v3 = projectPoint(tris.getV3());
+
+			
+				float v1X_ndc = v1.x() / v1.w();
+				float v1Y_ndc = v1.y() / v1.w();
+
+				float v2X_ndc = v2.x() / v2.w();
+				float v2Y_ndc = v2.y() / v2.w();
+
+				float v3X_ndc = v3.x() / v3.w();
+				float v3Y_ndc = v3.y() / v3.w();
+
+
+				int v1ScreenX = static_cast<int>((v1X_ndc + 1.0f) * WIDTH / 2.0f);
+				int v1ScreenY = static_cast<int>((1.0f - v1Y_ndc) * HEIGHT / 2.0f);
+
+				int v2ScreenX = static_cast<int>((v2X_ndc + 1.0f) * WIDTH / 2.0f);
+				int v2ScreenY = static_cast<int>((1.0f - v2Y_ndc) * HEIGHT / 2.0f);
+
+				int v3ScreenX = static_cast<int>((v3X_ndc + 1.0f) * WIDTH / 2.0f);
+				int v3ScreenY = static_cast<int>((1.0f - v3Y_ndc) * HEIGHT / 2.0f);
+
+				SDL_Color trisColor = { tris.getR(), tris.getG(), tris.getB(), 255 };
 				SDL_Vertex verts[3] = {
 					{ {v1ScreenX, v1ScreenY}, trisColor, {0, 0} },
 					{ {v2ScreenX, v2ScreenY}, trisColor, {0, 0} },
@@ -214,12 +223,13 @@ void MyRenderer::drawFaces(const Scene& scene)
 
 				SDL_RenderGeometry(renderer, nullptr, verts, 3, nullptr, 0);
 
-			}
+			
 		}
 
 
-	}
+	
 }
+
 
 
 
@@ -313,20 +323,28 @@ void MyRenderer::RotateCamera(int mouseX, int mouseY, int mouseZ)
 	cameraUp = q * cameraUp;
 }
 
+bool MyRenderer::projectedTrianglesIntersect(Tris P, Tris Q)
+{
+	return true;
+}
+
 bool MyRenderer::boxesIntersect(const Eigen::Vector2f& minA, const Eigen::Vector2f& maxA, const Eigen::Vector2f& minB, const Eigen::Vector2f& maxB)
 {
 	return !(maxA.x() < minB.x() || minA.x() > maxB.x() ||
 		maxA.y() < minB.y() || minA.y() > maxB.y());
 }
 
-void MyRenderer::getBoundingBox2D(const Tris& t, Eigen::Vector2f& min, Eigen::Vector2f& max)
+void MyRenderer::getBoundingBox2D(const Tris& tri, Eigen::Vector2f& min, Eigen::Vector2f& max)
 {
-	Eigen::Vector2f p1 = t.getV1Projection().head<2>();
-	Eigen::Vector2f p2 = t.getV2Projection().head<2>();
-	Eigen::Vector2f p3 = t.getV3Projection().head<2>();
+	float x1 = tri.getV1Projection().x();
+	float y1 = tri.getV1Projection().y();
+	float x2 = tri.getV2Projection().x();
+	float y2 = tri.getV2Projection().y();
+	float x3 = tri.getV3Projection().x();
+	float y3 = tri.getV3Projection().y();
 
-	min = p1.cwiseMin(p2).cwiseMin(p3);
-	max = p1.cwiseMax(p2).cwiseMax(p3);
+	min = Eigen::Vector2f(std::min({ x1, x2, x3 }), std::min({ y1, y2, y3 }));
+	max = Eigen::Vector2f(std::max({ x1, x2, x3 }), std::max({ y1, y2, y3 }));
 }
 
 bool MyRenderer::isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer)
@@ -336,8 +354,10 @@ bool MyRenderer::isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::V
 
 	float observerSide = n.dot(observer - p0);
 
+
 	for (const auto& v : { P.getV1(), P.getV2(), P.getV3() }) {
 		float side = n.dot(v.head<3>() - p0);
+
 		if (observerSide * side > 0) return false;
 	}
 	return true;
@@ -345,23 +365,21 @@ bool MyRenderer::isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::V
 
 bool MyRenderer::isOnSameSide(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer)
 {
-	Eigen::Vector3f n = Q.getNormal();         // normalna p³aszczyzny Q
-	Eigen::Vector3f p0 = Q.getV1().head<3>();  // punkt na p³aszczyŸnie
+	Eigen::Vector3f n = Q.getNormal();         
+	Eigen::Vector3f p0 = Q.getV1().head<3>();  
 
-	// Pozycja obserwatora wzglêdem p³aszczyzny Q
 	float obsSide = n.dot(observer - p0);
 
-	// Dla ka¿dego wierzcho³ka P sprawdŸ po której stronie jest
 	for (const auto& v : { P.getV1(), P.getV2(), P.getV3() }) {
 		float vertexSide = n.dot(v.head<3>() - p0);
 
-		// Je¿eli obserwator i wierzcho³ek s¹ po przeciwnych stronach (iloczyn < 0)
+
 		if (obsSide * vertexSide < 0.0f) {
-			return false; // s¹ po przeciwnych stronach
+			return false; 
 		}
 	}
 
-	return true; // wszystkie po tej samej stronie co obserwator
+	return true; 
 }
 
 std::vector<int> MyRenderer::getRenderingOrder(int numTris, const std::map<int, std::vector<int>>& graph)

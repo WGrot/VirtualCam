@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
 
 	Scene scene;
-	scene.loadFromFile("Scene1.txt");
+	scene.loadFromFile("scene.txt");
 
 	MyRenderer myRenderer(renderer, 1, WIDTH, HEIGHT);
 

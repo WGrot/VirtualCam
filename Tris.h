@@ -8,9 +8,9 @@ private:
     Eigen::Vector4f v1;
     Eigen::Vector4f v2;
 	Eigen::Vector4f v3;
-	Eigen::Vector4f v1Projection;
-	Eigen::Vector4f v2Projection;
-	Eigen::Vector4f v3Projection;
+	Eigen::Vector2f v1Projection;
+	Eigen::Vector2f v2Projection;
+	Eigen::Vector2f v3Projection;
 	Eigen::Vector3f normal;
     int R;
     int G;
@@ -31,15 +31,24 @@ public:
 	Eigen::Vector4f getV1() const { return v1; }
 	Eigen::Vector4f getV2() const { return v2; }
 	Eigen::Vector4f getV3() const { return v3; }
-	Eigen::Vector4f getV1Projection() const { return v1Projection; }
-	Eigen::Vector4f getV2Projection() const { return v2Projection; }
-	Eigen::Vector4f getV3Projection() const { return v3Projection; }
-	void SetV1Projection(const Eigen::Vector4f& v1Projection) { this->v1Projection = v1Projection; }
-	void SetV2Projection(const Eigen::Vector4f& v2Projection) { this->v2Projection = v2Projection; }
-	void SetV3Projection(const Eigen::Vector4f& v3Projection) { this->v3Projection = v3Projection; }
+	Eigen::Vector2f getV1Projection() const { return v1Projection; }
+	Eigen::Vector2f getV2Projection() const { return v2Projection; }
+	Eigen::Vector2f getV3Projection() const { return v3Projection; }
+	void SetV1Projection(const Eigen::Vector2f& v1Projection) { this->v1Projection = v1Projection; }
+	void SetV2Projection(const Eigen::Vector2f& v2Projection) { this->v2Projection = v2Projection; }
+	void SetV3Projection(const Eigen::Vector2f& v3Projection) { this->v3Projection = v3Projection; }
 	Eigen::Vector3f getNormal() const { return normal; }
 	int getR() const { return R; }
 	int getG() const { return G; }
 	int getB() const { return B; }
+
+	struct Projection {
+		float min = std::numeric_limits<float>::max();
+		float max = -std::numeric_limits<float>::max();
+	};
+
+	static bool trianglesIntersect(const Tris& t1, const Tris& t2);
+	static bool projectionsOverlap(const Projection& proj1, const Projection& proj2);
+	static Tris::Projection projectTriangle(const Eigen::Vector2f& axis, const Tris& triangle);
 
 };
