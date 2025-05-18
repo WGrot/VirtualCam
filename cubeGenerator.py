@@ -68,5 +68,5 @@ def add_cube_faces_to_scene_file(filename, center, length):
                 v3 = vertices[v3_idx]
                 line = f"{v1[0]} {v1[1]} {v1[2]} {v2[0]} {v2[1]} {v2[2]} {v3[0]} {v3[1]} {v3[2]} {R} {G} {B}\n"
                 file.write(line)
-add_cube_faces_to_scene_file("scene.txt", center=(-3, 0.0, 7.0), length=1.0)
+add_cube_faces_to_scene_file("scene.txt", center=(0, 0.0, 20.0), length=4.0)
 #add_cube_to_scene_file("scene.txt", center=(-1.5, 0.0, 5.0), length=1.0)

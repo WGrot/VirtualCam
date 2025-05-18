@@ -54,5 +54,6 @@
   <ItemGroup>
     <Text Include="scene.txt" />
     <Text Include="Scene1.txt" />
+    <Text Include="cycle.txt" />
   </ItemGroup>
 </Project>

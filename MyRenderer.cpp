@@ -138,9 +138,6 @@ void MyRenderer::drawFaces(const Scene& scene)
 				tris.SetV2Projection(v2ScreenPos);
 				tris.SetV3Projection(v3ScreenPos);
 			}
-
-
-
 		}
 
 		for (int i = 0; i < validTris.size(); i++) {
@@ -156,14 +153,13 @@ void MyRenderer::drawFaces(const Scene& scene)
 				}
 				const Tris& Q = validTris[j];
 
-				// === Test 1: Prostok¹tne otoczki ===
+
 				Eigen::Vector2f P_min, P_max, Q_min, Q_max;
 				getBoundingBox2D(P, P_min, P_max);
 				getBoundingBox2D(Q, Q_min, Q_max);
 
 				if (!boxesIntersect(P_min, P_max, Q_min, Q_max)) {
 					continue; 
-
 				}
 
 			
@@ -171,18 +167,28 @@ void MyRenderer::drawFaces(const Scene& scene)
 					continue; 
 				}
 
-				// === Test 3: B ca³kowicie po przeciwnej stronie od obserwatora wzglêdem A ===
 				if (isCompletelyBehind(P, Q, cameraPosition)) {
 					trisMap[j].push_back(i);
 					continue; 
 
 				}
 
-				// === Test 4: A po tej samej stronie co obserwator wzglêdem p³aszczyzny B ===
-				if (isOnSameSide(Q, P, cameraPosition)) {
+				if (isOnSameSide(P, Q, cameraPosition)) {
 					trisMap[i].push_back(j);
 					continue; 
 				}
+
+				if (isCompletelyBehind(Q, P, cameraPosition)) {
+					trisMap[i].push_back(j);
+					continue;
+
+				}
+
+				if (isOnSameSide(Q, P, cameraPosition)) {
+					trisMap[j].push_back(i);
+					continue;
+				}
+
 
 			}
 		}
@@ -222,19 +228,8 @@ void MyRenderer::drawFaces(const Scene& scene)
 				};
 
 				SDL_RenderGeometry(renderer, nullptr, verts, 3, nullptr, 0);
-
-			
 		}
-
-
-	
 }
-
-
-
-
-
-
 
 
 void MyRenderer::drawShape(const Shape& shape) {
@@ -385,8 +380,6 @@ bool MyRenderer::isOnSameSide(const Tris& Q, const Tris& P, const Eigen::Vector3
 std::vector<int> MyRenderer::getRenderingOrder(int numTris, const std::map<int, std::vector<int>>& graph)
 {
 	std::vector<int> inDegree(numTris, 0);
-
-	// Oblicz in-degree dla ka¿dego trójk¹ta
 	for (std::map<int, std::vector<int> >::const_iterator it = graph.begin(); it != graph.end(); ++it) {
 		const std::vector<int>& neighbors = it->second;
 		for (size_t i = 0; i < neighbors.size(); ++i) {
@@ -395,7 +388,6 @@ std::vector<int> MyRenderer::getRenderingOrder(int numTris, const std::map<int, 
 		}
 	}
 
-	// ZnajdŸ trójk¹ty bez zale¿noœci — mo¿na je narysowaæ jako pierwsze (s¹ najdalej)
 	std::queue<int> q;
 	for (int i = 0; i < numTris; ++i) {
 		if (inDegree[i] == 0) {
@@ -410,7 +402,6 @@ std::vector<int> MyRenderer::getRenderingOrder(int numTris, const std::map<int, 
 		q.pop();
 		renderingOrder.push_back(current);
 
-		// Zmniejsz in-degree dzieciom
 		std::map<int, std::vector<int> >::const_iterator it = graph.find(current);
 		if (it != graph.end()) {
 			const std::vector<int>& neighbors = it->second;
@@ -425,10 +416,10 @@ std::vector<int> MyRenderer::getRenderingOrder(int numTris, const std::map<int, 
 	}
 
 	// Sprawdzenie poprawnoœci sortowania (czy graf nie zawiera cykli)
-	if ((int)renderingOrder.size() != numTris) {
-		std::cerr << "B³¹d: cykl w grafie zale¿noœci trójk¹tów!" << std::endl;
-		return std::vector<int>(); // pusty wynik = b³¹d
-	}
+	//if ((int)renderingOrder.size() != numTris) {
+	//	std::cerr << "B³¹d: cykl w grafie zale¿noœci trójk¹tów!" << std::endl;
+	//	return std::vector<int>(); // pusty wynik = b³¹d
+	//}
 
-	return renderingOrder; // indeksy trójk¹tów od najdalszego do najbli¿szego
+	return renderingOrder;
 }

@@ -148,6 +148,7 @@
     <ClInclude Include="Shape.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="cycle.txt" />
     <Text Include="scene.txt" />
     <Text Include="Scene1.txt" />
   </ItemGroup>
