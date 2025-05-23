@@ -9,6 +9,7 @@ class MyRenderer
 {
 private:
 	SDL_Renderer* renderer;
+	SDL_Surface* surface;
 	Eigen::Matrix4f projectionMatrix;
     float d;
 	float d_step = 0.05f;
@@ -25,11 +26,17 @@ private:
 	float cameraStep = 0.2f;
 	Eigen::Matrix4f viewMatrix;
 
+
+	Eigen::Vector3f lightPos = Eigen::Vector3f(0.0f, 3.0f, 5.0f);
+	Eigen::Vector3f lightColor = Eigen::Vector3f(1.f, 1.f, 1.f);
+
+
 public:
-	MyRenderer(SDL_Renderer* renderer, float d, int width, int height){
+	MyRenderer(SDL_Renderer* renderer,SDL_Surface* surface, float d, int width, int height){
 
 		this->d = d;
 		this->renderer = renderer;
+		this->surface = surface;
 		this->WIDTH = width;
 		this->HEIGHT = height;
 		widthToHeightRatio = static_cast<float>(width) / static_cast<float>(height);
@@ -81,6 +88,33 @@ public:
 	bool isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer);
 	bool isOnSameSide(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer);
 	std::vector<int> getRenderingOrder(int numTris, const std::map<int, std::vector<int>>& graph);
+
+
+	void barycentric(float x, float y,
+		const Eigen::Vector2f& v0,
+		const Eigen::Vector2f& v1,
+		const Eigen::Vector2f& v2,
+		float& u, float& v, float& w);
+
+	void putPixel(SDL_Surface* surface, int x, int y, Uint32 color);
+
+	// proste oœwietlenie Phonga, u¿ywaj¹c normalnej trójk¹ta
+	Eigen::Vector3f phongLighting(const Eigen::Vector3f& fragPos,
+		const Eigen::Vector3f& normal,
+		const Eigen::Vector3f& lightPos,
+		const Eigen::Vector3f& viewPos,
+		const Eigen::Vector3f& lightColor,
+		const Eigen::Vector3f& baseColor);
+
+	void rasterizeTriangle(SDL_Surface* surface, const Tris& tri,
+		const Eigen::Vector3f& lightPos,
+		const Eigen::Vector3f& viewPos,
+		const Eigen::Vector3f& lightColor);
+
+	void MoveLightSource(Eigen::Vector3f moveVector);
+	void ChangeLightColor(float R, float G, float B);
+	void orbitLightAroundY(const Eigen::Vector3f& center, float angleRadians);
+
 };
 
 

@@ -4,7 +4,7 @@
 #include <Eigen/Geometry>
 #include <iostream>
 #include <vector>
-
+#include <random>
 #include "Edge.h"
 #include "Shape.h"
 #include "MyRenderer.h"
@@ -12,6 +12,9 @@
 
 const int WIDTH = 1280;
 const int HEIGHT =  720;
+
+const int RENDER_WIDTH = 320;
+const int RENDER_HEIGHT = 180;
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -34,16 +37,24 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_real_distribution<float> dist(0.3f, 1.0f);
+
+    SDL_Surface* drawingSurface = SDL_CreateRGBSurfaceWithFormat(0, RENDER_WIDTH, RENDER_HEIGHT, 32, SDL_PIXELFORMAT_ARGB8888);
+
+    SDL_Surface* surface = SDL_GetWindowSurface(window);
+
 
 	Scene scene;
-	scene.loadFromFile("scene.txt");
+	scene.loadFromFile("phong.txt");
 
-	MyRenderer myRenderer(renderer, 1, WIDTH, HEIGHT);
+	MyRenderer myRenderer(renderer, drawingSurface, 1, RENDER_WIDTH, RENDER_HEIGHT);
 
     SDL_Event event;
     bool running = true;
-
-
+	SDL_Texture* texture = nullptr;
+	int lightColorCounter = 0;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = false;
@@ -106,20 +117,36 @@ int main(int argc, char* argv[]) {
         }
 
 
+        SDL_FillRect(drawingSurface, nullptr, SDL_MapRGB(drawingSurface->format, 0, 0, 0));
 
-        SDL_RenderClear(renderer);
-		myRenderer.RecalculateViewMatrix();
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        myRenderer.RecalculateViewMatrix();
+		
+        myRenderer.orbitLightAroundY(Eigen::Vector3f(-2, 1.5f, 5), 0.05f);
+		lightColorCounter++;
+        if (lightColorCounter > 100) {
+            myRenderer.ChangeLightColor(dist(gen), dist(gen), dist(gen));
+            lightColorCounter = 0;
+        }
 
         for (const Shape& shape : scene.getShapes()) {
-            myRenderer.drawShape(shape);
+            myRenderer.drawShape(shape); 
         }
-		myRenderer.drawFaces(scene);
+        myRenderer.drawFaces(scene); 
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        texture = SDL_CreateTextureFromSurface(renderer, drawingSurface);
+        SDL_RenderClear(renderer);
+
+        SDL_Rect dstRect = { 0, 0, WIDTH, HEIGHT };
+        SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+
         SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer);
+        if (texture != nullptr) {
+            SDL_DestroyTexture(texture);
+        }
+        
 
-        SDL_Delay(16); 
+        SDL_Delay(16);
     }
 
 

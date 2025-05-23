@@ -148,7 +148,9 @@
     <ClInclude Include="Shape.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\..\..\Downloads\sphere_triangles.txt" />
     <Text Include="cycle.txt" />
+    <Text Include="phong.txt" />
     <Text Include="scene.txt" />
     <Text Include="Scene1.txt" />
   </ItemGroup>

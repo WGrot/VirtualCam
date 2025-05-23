@@ -55,5 +55,7 @@
     <Text Include="scene.txt" />
     <Text Include="Scene1.txt" />
     <Text Include="cycle.txt" />
+    <Text Include="phong.txt" />
+    <Text Include="..\..\..\Downloads\sphere_triangles.txt" />
   </ItemGroup>
 </Project>
