@@ -121,16 +121,13 @@ int main(int argc, char* argv[]) {
 
         myRenderer.RecalculateViewMatrix();
 		
-        myRenderer.orbitLightAroundY(Eigen::Vector3f(-2, 1.5f, 5), 0.05f);
+        myRenderer.orbitLightAroundY(Eigen::Vector3f(0, 3.0f, 5), 0.05f);
 		lightColorCounter++;
         if (lightColorCounter > 100) {
             myRenderer.ChangeLightColor(dist(gen), dist(gen), dist(gen));
             lightColorCounter = 0;
         }
 
-        for (const Shape& shape : scene.getShapes()) {
-            myRenderer.drawShape(shape); 
-        }
         myRenderer.drawFaces(scene); 
 
         texture = SDL_CreateTextureFromSurface(renderer, drawingSurface);

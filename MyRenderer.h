@@ -27,7 +27,7 @@ private:
 	Eigen::Matrix4f viewMatrix;
 
 
-	Eigen::Vector3f lightPos = Eigen::Vector3f(0.0f, 3.0f, 5.0f);
+	Eigen::Vector3f lightPos = Eigen::Vector3f(0.0f, 3.0f, 0.0f);
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1.f, 1.f, 1.f);
 
 
@@ -71,9 +71,6 @@ public:
 
 	void drawFaces(const Scene& scene);
 
-	void drawShape(const Shape& shape);
-
-	void DrawTris(const Tris& tris);
 
 	void moveCameraRight(int align);
 	void moveCameraForward(int align);
@@ -81,13 +78,10 @@ public:
 	void RotateCamera(int mouseX, int mouseY, int mouseZ);
 
 
-	bool projectedTrianglesIntersect(Tris P,  Tris Q);
-	bool boxesIntersect(const Eigen::Vector2f& minA, const Eigen::Vector2f& maxA,
-		const Eigen::Vector2f& minB, const Eigen::Vector2f& maxB);
+
+
 	void getBoundingBox2D(const Tris& t, Eigen::Vector2f& min, Eigen::Vector2f& max);
-	bool isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer);
-	bool isOnSameSide(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer);
-	std::vector<int> getRenderingOrder(int numTris, const std::map<int, std::vector<int>>& graph);
+
 
 
 	void barycentric(float x, float y,
@@ -111,7 +105,6 @@ public:
 		const Eigen::Vector3f& viewPos,
 		const Eigen::Vector3f& lightColor);
 
-	void MoveLightSource(Eigen::Vector3f moveVector);
 	void ChangeLightColor(float R, float G, float B);
 	void orbitLightAroundY(const Eigen::Vector3f& center, float angleRadians);
 

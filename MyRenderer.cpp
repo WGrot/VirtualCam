@@ -11,8 +11,6 @@
 
 #pragma region MatrixCalculations
 
-
-
 Eigen::Matrix4f MyRenderer::getProjectionMatrix()
 {
 	return projectionMatrix;
@@ -143,62 +141,9 @@ void MyRenderer::drawFaces(const Scene& scene)
 		}
 	}
 
+
 	for (int i = 0; i < validTris.size(); i++) {
-		const Tris& P = validTris[i];
-
-		for (int j = 0; j < validTris.size(); j++) {
-			if (i == j) continue;
-			if (std::find(trisMap[i].begin(), trisMap[i].end(), j) != trisMap[i].end()) {
-				continue;
-			}
-			if (std::find(trisMap[j].begin(), trisMap[j].end(), i) != trisMap[j].end()) {
-				continue;
-			}
-			const Tris& Q = validTris[j];
-
-
-			Eigen::Vector2f P_min, P_max, Q_min, Q_max;
-			getBoundingBox2D(P, P_min, P_max);
-			getBoundingBox2D(Q, Q_min, Q_max);
-
-			if (!boxesIntersect(P_min, P_max, Q_min, Q_max)) {
-				continue;
-			}
-
-
-			if (!Tris::trianglesIntersect(P, Q)) {
-				continue;
-			}
-
-			if (isCompletelyBehind(P, Q, cameraPosition)) {
-				trisMap[j].push_back(i);
-				continue;
-
-			}
-
-			if (isOnSameSide(P, Q, cameraPosition)) {
-				trisMap[i].push_back(j);
-				continue;
-			}
-
-			if (isCompletelyBehind(Q, P, cameraPosition)) {
-				trisMap[i].push_back(j);
-				continue;
-
-			}
-
-			if (isOnSameSide(Q, P, cameraPosition)) {
-				trisMap[j].push_back(i);
-				continue;
-			}
-
-
-		}
-	}
-	std::vector<int> renderingOrder = getRenderingOrder(validTris.size(), trisMap);
-
-	for (int i = 0; i < renderingOrder.size(); i++) {
-		Tris tris = validTris[renderingOrder[i]];
+		Tris tris = validTris[i];
 		Eigen::Vector4f v1 = projectPoint(tris.getV1());
 		Eigen::Vector4f v2 = projectPoint(tris.getV2());
 		Eigen::Vector4f v3 = projectPoint(tris.getV3());
@@ -238,8 +183,6 @@ void MyRenderer::drawFaces(const Scene& scene)
 
 
 #pragma region CameraMovement
-
-
 
 void MyRenderer::moveCameraRight(int align)
 {
@@ -294,20 +237,7 @@ void MyRenderer::RotateCamera(int mouseX, int mouseY, int mouseZ)
 }
 #pragma endregion
 
-#pragma region PaintersAlgorithmStuff
 
-
-
-bool MyRenderer::projectedTrianglesIntersect(Tris P, Tris Q)
-{
-	return true;
-}
-
-bool MyRenderer::boxesIntersect(const Eigen::Vector2f& minA, const Eigen::Vector2f& maxA, const Eigen::Vector2f& minB, const Eigen::Vector2f& maxB)
-{
-	return !(maxA.x() < minB.x() || minA.x() > maxB.x() ||
-		maxA.y() < minB.y() || minA.y() > maxB.y());
-}
 
 void MyRenderer::getBoundingBox2D(const Tris& tri, Eigen::Vector2f& min, Eigen::Vector2f& max)
 {
@@ -322,115 +252,8 @@ void MyRenderer::getBoundingBox2D(const Tris& tri, Eigen::Vector2f& min, Eigen::
 	max = Eigen::Vector2f(std::max({ x1, x2, x3 }), std::max({ y1, y2, y3 }));
 }
 
-bool MyRenderer::isCompletelyBehind(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer)
-{
-	Eigen::Vector3f n = Q.getNormal();
-	Eigen::Vector3f p0 = Q.getV1().head<3>();
-
-	float observerSide = n.dot(observer - p0);
 
 
-	for (const auto& v : { P.getV1(), P.getV2(), P.getV3() }) {
-		float side = n.dot(v.head<3>() - p0);
-
-		if (observerSide * side > 0) return false;
-	}
-	return true;
-}
-
-bool MyRenderer::isOnSameSide(const Tris& Q, const Tris& P, const Eigen::Vector3f& observer)
-{
-	Eigen::Vector3f n = Q.getNormal();
-	Eigen::Vector3f p0 = Q.getV1().head<3>();
-
-	float obsSide = n.dot(observer - p0);
-
-	for (const auto& v : { P.getV1(), P.getV2(), P.getV3() }) {
-		float vertexSide = n.dot(v.head<3>() - p0);
-
-
-		if (obsSide * vertexSide < 0.0f) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-std::vector<int> MyRenderer::getRenderingOrder(int numTris, const std::map<int, std::vector<int>>& graph)
-{
-	std::vector<int> inDegree(numTris, 0);
-	for (std::map<int, std::vector<int> >::const_iterator it = graph.begin(); it != graph.end(); ++it) {
-		const std::vector<int>& neighbors = it->second;
-		for (size_t i = 0; i < neighbors.size(); ++i) {
-			int to = neighbors[i];
-			inDegree[to]++;
-		}
-	}
-
-	std::queue<int> q;
-	for (int i = 0; i < numTris; ++i) {
-		if (inDegree[i] == 0) {
-			q.push(i);
-		}
-	}
-
-	std::vector<int> renderingOrder;
-
-	while (!q.empty()) {
-		int current = q.front();
-		q.pop();
-		renderingOrder.push_back(current);
-
-		std::map<int, std::vector<int> >::const_iterator it = graph.find(current);
-		if (it != graph.end()) {
-			const std::vector<int>& neighbors = it->second;
-			for (size_t i = 0; i < neighbors.size(); ++i) {
-				int neighbor = neighbors[i];
-				inDegree[neighbor]--;
-				if (inDegree[neighbor] == 0) {
-					q.push(neighbor);
-				}
-			}
-		}
-	}
-
-
-	return renderingOrder;
-}
-
-void MyRenderer::drawShape(const Shape& shape) {
-
-	for (const Edge& edge : shape.getEdges()) {
-		Eigen::Vector4f start_clip = projectPoint(edge.getStart());
-		Eigen::Vector4f end_clip = projectPoint(edge.getEnd());
-
-		bool start_visible = start_clip.w() > 0;
-		bool end_visible = end_clip.w() > 0;
-
-		if (start_visible && end_visible) {
-			float startX_ndc = start_clip.x() / start_clip.w();
-			float startY_ndc = start_clip.y() / start_clip.w();
-
-			float endX_ndc = end_clip.x() / end_clip.w();
-			float endY_ndc = end_clip.y() / end_clip.w();
-
-
-			int startScreenX = static_cast<int>((startX_ndc + 1.0f) * WIDTH / 2.0f);
-			int startScreenY = static_cast<int>((1.0f - startY_ndc) * HEIGHT / 2.0f);
-
-			int endScreenX = static_cast<int>((endX_ndc + 1.0f) * WIDTH / 2.0f);
-			int endScreenY = static_cast<int>((1.0f - endY_ndc) * HEIGHT / 2.0f);
-
-			SDL_RenderDrawLine(renderer, startScreenX, startScreenY, endScreenX, endScreenY);
-
-		}
-	}
-
-
-}
-
-#pragma endregion
 
 void MyRenderer::barycentric(float x, float y, const Eigen::Vector2f& v0, const Eigen::Vector2f& v1, const Eigen::Vector2f& v2, float& u, float& v, float& w)
 {
@@ -460,8 +283,8 @@ Eigen::Vector3f MyRenderer::phongLighting(const Eigen::Vector3f& fragPos, const 
 	float diff = std::max(N.dot(L), 0.0f);
 	Eigen::Vector3f diffuse = diff * lightColor;
 
-	float specularStrength = 10.0f;
-	float shininess = 6.0f;
+	float specularStrength = 20.0f;
+	float shininess = 32.0f;
 	float spec = powf(std::max(R.dot(V), 0.0f), shininess);
 	Eigen::Vector3f specular = specularStrength * spec * lightColor;
 
@@ -479,12 +302,12 @@ void MyRenderer::rasterizeTriangle(SDL_Surface* surface, const Tris& tri,
 	const Eigen::Vector3f& viewPos,
 	const Eigen::Vector3f& lightColor)
 {
-	// Projekcja 2D
+
 	auto v0 = tri.getV1Projection();
 	auto v1 = tri.getV2Projection();
 	auto v2 = tri.getV3Projection();
 
-	// Bounding box
+
 	int minX = std::max(0, (int)std::floor(std::min({ v0.x(), v1.x(), v2.x() })));
 	int maxX = std::min(surface->w - 1, (int)std::ceil(std::max({ v0.x(), v1.x(), v2.x() })));
 	int minY = std::max(0, (int)std::floor(std::min({ v0.y(), v1.y(), v2.y() })));
@@ -492,21 +315,20 @@ void MyRenderer::rasterizeTriangle(SDL_Surface* surface, const Tris& tri,
 
 	Eigen::Vector3f baseColor(tri.getR() / 255.f, tri.getG() / 255.f, tri.getB() / 255.f);
 
-	// Pozycje 3D i normalne
+
 	auto P0 = tri.getV1().head<3>();
 	auto P1 = tri.getV2().head<3>();
 	auto P2 = tri.getV3().head<3>();
 
-	// Rasteryzacja
 	for (int x = minX; x <= maxX; x++) {
 		for (int y = minY; y <= maxY; y++) {
 			float u, v, w;
 			barycentric(x + 0.5f, y + 0.5f, v0, v1, v2, u, v, w);
 			if (u >= 0 && v >= 0 && w >= 0) {
-				// Interpolacja pozycji i normalnej
+
 				Eigen::Vector3f fragPos = u * P0 + v * P1 + w * P2;
 
-				// Oœwietlenie Phonga
+
 				Eigen::Vector3f color = phongLighting(fragPos, tri.getNormal(), lightPos, viewPos, lightColor, baseColor);
 
 				Uint8 r = static_cast<Uint8>(std::min(color.x(), 1.0f) * 255);
@@ -520,9 +342,6 @@ void MyRenderer::rasterizeTriangle(SDL_Surface* surface, const Tris& tri,
 	}
 }
 
-void MyRenderer::MoveLightSource(Eigen::Vector3f moveVector)
-{
-}
 
 void MyRenderer::ChangeLightColor(float R, float G, float B)
 {
@@ -537,6 +356,5 @@ void MyRenderer::orbitLightAroundY(const Eigen::Vector3f& center, float angleRad
 	Eigen::AngleAxisf rotation(angleRadians, Eigen::Vector3f::UnitY());
 	Eigen::Vector3f rotated = rotation * relative;
 	lightPos = rotated + center;
-	std::cout << "lightPos up: " << lightPos.x() << " " << lightPos.y() << " " << lightPos.z() << std::endl;
 }
 
