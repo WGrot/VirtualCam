@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
             lightColorCounter = 0;
         }
 
-        myRenderer.drawFaces(scene); 
+        myRenderer.drawFaces(scene);
 
         texture = SDL_CreateTextureFromSurface(renderer, drawingSurface);
         SDL_RenderClear(renderer);

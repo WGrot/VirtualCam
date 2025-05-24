@@ -69,7 +69,7 @@ public:
 
 	Eigen::Vector4f projectPoint(const Eigen::Vector4f& point);
 
-	void drawFaces(const Scene& scene);
+	void drawFaces(Scene & scene);
 
 
 	void moveCameraRight(int align);
@@ -92,7 +92,6 @@ public:
 
 	void putPixel(SDL_Surface* surface, int x, int y, Uint32 color);
 
-	// proste oœwietlenie Phonga, u¿ywaj¹c normalnej trójk¹ta
 	Eigen::Vector3f phongLighting(const Eigen::Vector3f& fragPos,
 		const Eigen::Vector3f& normal,
 		const Eigen::Vector3f& lightPos,
