@@ -16,10 +16,6 @@ private:
 
     Eigen::Vector3f normal;
 
-    Eigen::Vector3f n1; // normalne wierzcho³ków
-    Eigen::Vector3f n2;
-    Eigen::Vector3f n3;
-
     int R;
     int G;
     int B;
@@ -33,8 +29,7 @@ private:
 public:
     Tris(const Eigen::Vector4f& v1, const Eigen::Vector4f& v2, const Eigen::Vector4f& v3, int R, int G, int B)
         : v1(v1), v2(v2), v3(v3), R(R), G(G), B(B) {
-        normal = calculateNormal();
-        n1 = n2 = n3 = normal; // domyœlnie ustaw normalne na tê sam¹
+        normal = calculateNormal(); 
     }
 
     // Wierzcho³ki
@@ -54,16 +49,6 @@ public:
     // Normalna trójk¹ta (face normal)
     Eigen::Vector3f getNormal() const { return normal; }
 
-    // Normalne wierzcho³ków
-    Eigen::Vector3f getN1() const { return n1; }
-    Eigen::Vector3f getN2() const { return n2; }
-    Eigen::Vector3f getN3() const { return n3; }
-
-    void setNormals(const Eigen::Vector3f& _n1, const Eigen::Vector3f& _n2, const Eigen::Vector3f& _n3) {
-        n1 = _n1;
-        n2 = _n2;
-        n3 = _n3;
-    }
 
     // Kolor
     int getR() const { return R; }

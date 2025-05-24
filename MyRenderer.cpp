@@ -230,7 +230,7 @@ void MyRenderer::drawFaces(const Scene& scene)
 			{ {v3ScreenX, v3ScreenY}, trisColor, {0, 0} }
 		};
 
-		rasterizeTriangle(surface, tris, lightPos, cameraPosition.head<3>(), lightColor);
+		rasterizeTriangle(surface, tris, lightPos, cameraPosition.head<3>() - cameraForward * 30, lightColor);
 	}
 }
 
@@ -460,14 +460,14 @@ Eigen::Vector3f MyRenderer::phongLighting(const Eigen::Vector3f& fragPos, const 
 	float diff = std::max(N.dot(L), 0.0f);
 	Eigen::Vector3f diffuse = diff * lightColor;
 
-	float specularStrength = 0.8f;
-	float shininess = 64.0f;
+	float specularStrength = 10.0f;
+	float shininess = 6.0f;
 	float spec = powf(std::max(R.dot(V), 0.0f), shininess);
 	Eigen::Vector3f specular = specularStrength * spec * lightColor;
 
 	Eigen::Vector3f result = ambient.cwiseProduct(baseColor) +
-		diffuse.cwiseProduct(baseColor) +
-		specular;
+		diffuse.cwiseProduct(baseColor) 
+	+ specular(baseColor);
 
 
 	return result.cwiseMin(1.0f).cwiseMax(0.0f);
@@ -497,10 +497,6 @@ void MyRenderer::rasterizeTriangle(SDL_Surface* surface, const Tris& tri,
 	auto P1 = tri.getV2().head<3>();
 	auto P2 = tri.getV3().head<3>();
 
-	auto N0 = tri.getN1();
-	auto N1 = tri.getN2();
-	auto N2 = tri.getN3();
-
 	// Rasteryzacja
 	for (int x = minX; x <= maxX; x++) {
 		for (int y = minY; y <= maxY; y++) {
@@ -509,10 +505,9 @@ void MyRenderer::rasterizeTriangle(SDL_Surface* surface, const Tris& tri,
 			if (u >= 0 && v >= 0 && w >= 0) {
 				// Interpolacja pozycji i normalnej
 				Eigen::Vector3f fragPos = u * P0 + v * P1 + w * P2;
-				Eigen::Vector3f normal = (u * N0 + v * N1 + w * N2).normalized();
 
 				// Oœwietlenie Phonga
-				Eigen::Vector3f color = phongLighting(fragPos, normal, lightPos, viewPos, lightColor, baseColor);
+				Eigen::Vector3f color = phongLighting(fragPos, tri.getNormal(), lightPos, viewPos, lightColor, baseColor);
 
 				Uint8 r = static_cast<Uint8>(std::min(color.x(), 1.0f) * 255);
 				Uint8 g = static_cast<Uint8>(std::min(color.y(), 1.0f) * 255);
