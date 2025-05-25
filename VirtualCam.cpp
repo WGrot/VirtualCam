@@ -122,11 +122,11 @@ int main(int argc, char* argv[]) {
         myRenderer.RecalculateViewMatrix();
 		
         myRenderer.orbitLightAroundY(Eigen::Vector3f(0, 3.0f, 5), 0.05f);
-		lightColorCounter++;
-        if (lightColorCounter > 100) {
-            myRenderer.ChangeLightColor(dist(gen), dist(gen), dist(gen));
-            lightColorCounter = 0;
-        }
+		//lightColorCounter++;
+  //      if (lightColorCounter > 100) {
+  //          myRenderer.ChangeLightColor(dist(gen), dist(gen), dist(gen));
+  //          lightColorCounter = 0;
+  //      }
 
         myRenderer.drawFaces(scene);
 

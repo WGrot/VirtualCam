@@ -27,7 +27,7 @@ private:
 	Eigen::Matrix4f viewMatrix;
 
 
-	Eigen::Vector3f lightPos = Eigen::Vector3f(0.0f, 3.0f, 0.0f);
+	Eigen::Vector3f lightPos = Eigen::Vector3f(3.0f, 3.0f, 0.0f);
 	Eigen::Vector3f lightColor = Eigen::Vector3f(1.f, 1.f, 1.f);
 
 

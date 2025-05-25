@@ -229,28 +229,36 @@ void MyRenderer::putPixel(SDL_Surface* surface, int x, int y, Uint32 color)
 	pixels[y * surface->w + x] = color;
 }
 
-Eigen::Vector3f MyRenderer::phongLighting(const Eigen::Vector3f& fragPos, const Eigen::Vector3f& normal, const Eigen::Vector3f& lightPos, const Eigen::Vector3f& viewPos, const Eigen::Vector3f& lightColor, const Eigen::Vector3f& baseColor)
+Eigen::Vector3f MyRenderer::phongLighting(const Eigen::Vector3f& fragPos, const Eigen::Vector3f& normal,
+	const Eigen::Vector3f& lightPos, const Eigen::Vector3f& viewPos,
+	const Eigen::Vector3f& lightColor, const Eigen::Vector3f& baseColor)
 {
-	Eigen::Vector3f N = normal;
+	Eigen::Vector3f N = normal.normalized();
 	Eigen::Vector3f L = (lightPos - fragPos).normalized();
 	Eigen::Vector3f V = (viewPos - fragPos).normalized();
 	Eigen::Vector3f R = (2.0f * N.dot(L) * N - L).normalized();
 
-	float ambientStrength = 0.1f;
-	Eigen::Vector3f ambient = ambientStrength * lightColor;
+	float distance = (lightPos - fragPos).norm();
+	float kc = 1.0f;
+	float kl = 0.005f;
+	float kq = 0.002f;
+	float attenuation = 1.0f / (kc + kl * distance + kq * distance * distance);
 
+	float k_a = 0.1f;
+	Eigen::Vector3f ambient = k_a * lightColor;
+
+	float k_d = 1.0f;
 	float diff = std::max(N.dot(L), 0.0f);
-	Eigen::Vector3f diffuse = diff * lightColor;
+	Eigen::Vector3f diffuse = k_d * diff * lightColor;
 
-	float specularStrength = 20.0f;
-	float shininess = 32.0f;
-	float spec = powf(std::max(R.dot(V), 0.0f), shininess);
-	Eigen::Vector3f specular = specularStrength * spec * lightColor;
+	float k_s = 0.5f;
+	float n = 32.0f;
+	float spec = powf(std::max(R.dot(V), 0.0f), n);
+	Eigen::Vector3f specular = k_s * spec * lightColor;
 
-	Eigen::Vector3f result = ambient.cwiseProduct(baseColor) +
-		diffuse.cwiseProduct(baseColor)
-		+ specular(baseColor);
 
+	Eigen::Vector3f result = ambient.cwiseProduct(baseColor)
+		+ attenuation * (diffuse.cwiseProduct(baseColor) + specular);
 
 	return result.cwiseMin(1.0f).cwiseMax(0.0f);
 }
